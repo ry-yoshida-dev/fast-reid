@@ -1,78 +1,37 @@
-<img src=".github/FastReID-Logo.png" width="300" >
+# fast-reid
 
-[![Gitter](https://badges.gitter.im/fast-reid/community.svg)](https://gitter.im/fast-reid/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+## Overview
 
-Gitter: [fast-reid/community](https://gitter.im/fast-reid/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
+Inference-only fork of [JDAI-CV/fast-reid](https://github.com/JDAI-CV/fast-reid). Import as `fast_reid.fastreid` (configs ship under `fast_reid.configs`). Training stacks, datasets, evaluation, and unused backbones were removed; MOT17 YAML configs are bundled for ReID-Inference.
 
-Wechat: 
+PyTorch is not pinned; install it separately for your CUDA/CPU setup.
 
-<img src=".github/wechat_group.png" width="150" >
+```bash
+pip install .
+```
 
+## Components
 
-FastReID is a research platform that implements state-of-the-art re-identification algorithms. It is a ground-up rewrite of the previous version, [reid strong baseline](https://github.com/michuanhaohao/reid-strong-baseline).
+| Component | Description |
+| --------- | ----------- |
+| [src/fast_reid/fastreid/](src/fast_reid/fastreid/) | Config, modeling (Baseline/MGN), layers, checkpoint utilities. |
+| [src/fast_reid/configs/MOT17/](src/fast_reid/configs/MOT17/) | MOT17 model YAML stems (`sbs_S50`, `bagtricks_R50`, …). |
 
-## What's New
+## Examples
 
-- [Sep 2021] [DG-ReID](https://github.com/xiaomingzhid/sskd) is updated, you can check the [paper](https://arxiv.org/pdf/2108.05045.pdf).
-- [June 2021] [Contiguous parameters](https://github.com/PhilJd/contiguous_pytorch_params) is supported, now it can
-  accelerate ~20%.
-- [May 2021] Vision Transformer backbone supported, see `configs/Market1501/bagtricks_vit.yml`.
-- [Apr 2021] Partial FC supported in [FastFace](projects/FastFace)!
-- [Jan 2021] TRT network definition APIs in [FastRT](projects/FastRT) has been released! 
-Thanks for [Darren](https://github.com/TCHeish)'s contribution.
-- [Jan 2021] NAIC20(reid track) [1-st solution](projects/NAIC20) based on fastreid has been released！
-- [Jan 2021] FastReID V1.0 has been released！🎉
-  Support many tasks beyond reid, such image retrieval and face recognition. See [release notes](https://github.com/JDAI-CV/fast-reid/releases/tag/v1.0.0).
-- [Oct 2020] Added the [Hyper-Parameter Optimization](projects/FastTune) based on fastreid. See `projects/FastTune`.
-- [Sep 2020] Added the [person attribute recognition](projects/FastAttr) based on fastreid. See `projects/FastAttr`.
-- [Sep 2020] Automatic Mixed Precision training is supported with `apex`. Set `cfg.SOLVER.FP16_ENABLED=True` to switch it on.
-- [Aug 2020] [Model Distillation](projects/FastDistill) is supported, thanks for [guan'an wang](https://github.com/wangguanan)'s contribution.
-- [Aug 2020] ONNX/TensorRT converter is supported.
-- [Jul 2020] Distributed training with multiple GPUs, it trains much faster.
-- Includes more features such as circle loss, abundant visualization methods and evaluation metrics, SoTA results on conventional, cross-domain, partial and vehicle re-id, testing on multi-datasets simultaneously, etc.
-- Can be used as a library to support [different projects](projects) on top of it. We'll open source more research projects in this way.
-- Remove [ignite](https://github.com/pytorch/ignite)(a high-level library) dependency and powered by [PyTorch](https://pytorch.org/).
+```python
+import torch
+from fast_reid import CONFIG_ROOT
+from fast_reid.fastreid.config import get_cfg
+from fast_reid.fastreid.modeling.meta_arch import build_model
+from fast_reid.fastreid.utils.checkpoint import Checkpointer
 
-We write a [fastreid intro](https://l1aoxingyu.github.io/blogpages/reid/fastreid/2020/05/29/fastreid.html) 
-and [fastreid v1.0](https://l1aoxingyu.github.io/blogpages/reid/fastreid/2021/04/28/fastreid-v1.html) about this toolbox.
+cfg = get_cfg()
+cfg.merge_from_file(str(CONFIG_ROOT / "MOT17" / "sbs_S50.yml"))
+cfg.merge_from_list(["MODEL.WEIGHTS", "path/to/model.pth", "MODEL.BACKBONE.PRETRAIN", False])
+cfg.MODEL.DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+cfg.freeze()
 
-## Changelog
-
-Please refer to [changelog.md](CHANGELOG.md) for details and release history.
-
-## Installation
-
-See [INSTALL.md](INSTALL.md).
-
-## Quick Start
-
-The designed architecture follows this guide [PyTorch-Project-Template](https://github.com/L1aoXingyu/PyTorch-Project-Template), you can check each folder's purpose by yourself.
-
-See [GETTING_STARTED.md](GETTING_STARTED.md).
-
-Learn more at out [documentation](https://fast-reid.readthedocs.io/). And see [projects/](projects) for some projects that are build on top of fastreid.
-
-## Model Zoo and Baselines
-
-We provide a large set of baseline results and trained models available for download in the [Fastreid Model Zoo](MODEL_ZOO.md).
-
-## Deployment
-
-We provide some examples and scripts to convert fastreid model to Caffe, ONNX and TensorRT format in [Fastreid deploy](tools/deploy).
-
-## License
-
-Fastreid is released under the [Apache 2.0 license](LICENSE).
-
-## Citing FastReID
-
-If you use FastReID in your research or wish to refer to the baseline results published in the Model Zoo, please use the following BibTeX entry.
-
-```BibTeX
-@article{he2020fastreid,
-  title={FastReID: A Pytorch Toolbox for General Instance Re-identification},
-  author={He, Lingxiao and Liao, Xingyu and Liu, Wu and Liu, Xinchen and Cheng, Peng and Mei, Tao},
-  journal={arXiv preprint arXiv:2006.02631},
-  year={2020}
-}
+model = build_model(cfg)
+Checkpointer(model).load("path/to/model.pth")
 ```

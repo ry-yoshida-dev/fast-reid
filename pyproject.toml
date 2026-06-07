@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fast-reid"
+version = "2.0.0"
+authors = [
+    { name = "liaoxingyu" },
+    { name = "Ryuto Yoshida" },
+]
+description = "Inference-only FastReID fork for MOT17-style ReID feature extraction."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = ["Person Re-Identification", "Deep Learning", "Computer Vision"]
+dependencies = [
+    "numpy",
+    "Pillow",
+    "yacs",
+    "termcolor",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = [
+    "build>=1.0.0",
+    "twine>=5.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ry-yoshida-dev/fast-reid"
+"Upstream" = "https://github.com/JDAI-CV/fast-reid"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+fast_reid = ["py.typed", "configs/*.yml", "configs/**/*.yml"]

@@ -1,0 +1,6 @@
+# Runtime dependencies (mirrors pyproject.toml; prefer: pip install .)
+numpy
+Pillow
+yacs
+termcolor
+pyyaml
